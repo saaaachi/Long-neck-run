@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Long Neck Run - 第24弾</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #ffccbc; font-family: sans-serif; touch-action: none; }
+        #ad-top, #ad-bottom { position: fixed; left: 0; width: 100%; height: 150px; background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        #ad-top { top: 0; } #ad-bottom { bottom: 0; }
+        iframe { border: none; width: 100%; height: 150px; }
+        canvas { display: block; margin-top: 150px; background: #fff3e0; }
+        #ui { position: absolute; top: 160px; left: 0; width: 100%; text-align: center; color: #d84315; font-size: 26px; font-weight: bold; pointer-events: none; z-index: 10; }
+        #startScreen { position: absolute; top: 150px; left: 0; width: 100%; height: calc(100vh - 300px); background: rgba(255,255,255,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+        #goButton { padding: 15px 45px; font-size: 24px; background: #ff5722; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="ad-top"><iframe src="ad.html"></iframe></div>
+    <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
+    <div id="startScreen">
+        <h1 style="color:#ff5722; font-style: italic;">ノびる首</h1>
+        <p>左右スライドで首を伸ばせ！<br>栄養（🍙）を食べて成長だ！✂️は回避！</p>
+        <button id="goButton">伸ばす！</button>
+    </div>
+    <div id="ui">LENGTH: 0</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const ui = document.getElementById("ui");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 300;
+
+        let score = 0, gameActive = false, items = [];
+        let player = { x: canvas.width/2, targetX: canvas.width/2 };
+
+        document.getElementById("goButton").onclick = () => {
+            document.getElementById("startScreen").style.display = "none";
+            gameActive = true; score = 0; items = []; spawnItem(); update();
+        };
+
+        window.addEventListener("touchmove", (e) => { 
+            player.targetX = e.touches[0].clientX; e.preventDefault(); 
+        }, {passive: false});
+        window.addEventListener("mousemove", (e) => player.targetX = e.clientX);
+
+        function spawnItem() {
+            if(!gameActive) return;
+            const isHazard = Math.random() < 0.3;
+            items.push({
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: -50,
+                emoji: isHazard ? "✂️" : "🍙",
+                type: isHazard ? "bad" : "good",
+                speed: 3 + (score / 10)
+            });
+            setTimeout(spawnItem, Math.max(300, 700 - (score * 5)));
+        }
+
+        function update() {
+            if(!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            player.x += (player.targetX - player.x) * 0.1;
+
+            // 首の描画（シュールポイント：胴体から顔まで線を引く）
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, canvas.height); // 画面中央下部（胴体）
+            ctx.quadraticCurveTo(player.x, canvas.height - 50, player.x, canvas.height - 100);
+            ctx.strokeStyle = "#ffab91";
+            ctx.lineWidth = 20 + Math.min(score, 30); // 食べると首が太くなる
+            ctx.lineCap = "round";
+            ctx.stroke();
+
+            // 顔
+            ctx.font = "60px Arial"; ctx.textAlign = "center";
+            ctx.fillText("🌝", player.x, canvas.height - 110);
+
+            for(let i = items.length - 1; i >= 0; i--) {
+                let it = items[i];
+                it.y += it.speed;
+                ctx.font = "40px Arial";
+                ctx.fillText(it.emoji, it.x, it.y);
+
+                let d = Math.sqrt((player.x - it.x)**2 + (canvas.height - 110 - it.y)**2);
+                if(d < 45) {
+                    if(it.type === "good") {
+                        score++; ui.innerText = "LENGTH: " + score; items.splice(i, 1);
+                    } else {
+                        alert("首が切れた！ LENGTH: " + score); location.reload(); return;
+                    }
+                } else if(it.y > canvas.height + 50) items.splice(i, 1);
+            }
+            requestAnimationFrame(update);
+        }
+
+        setInterval(() => {
+            const frames = [document.querySelector('#ad-top iframe'), document.querySelector('#ad-bottom iframe')];
+            frames.forEach(f => { if(f) { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }});
+        }, 30000);
+    </script>
+</body>
+</html>
