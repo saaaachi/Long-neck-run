@@ -5,101 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Long Neck Run - 第24弾</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #ffccbc; font-family: sans-serif; touch-action: none; }
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #ffccbc; font-family: sans-serif; touch-action: none; position: fixed; width: 100%; height: 100%; }
+        
+        /* 上下広告（ad.html） */
         #ad-top, #ad-bottom { position: fixed; left: 0; width: 100%; height: 150px; background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; }
-        #ad-top { top: 0; } #ad-bottom { bottom: 0; }
+        #ad-top { top: 0; } 
+        #ad-bottom { bottom: 0; }
         iframe { border: none; width: 100%; height: 150px; }
-        canvas { display: block; margin-top: 150px; background: #fff3e0; }
-        #ui { position: absolute; top: 160px; left: 0; width: 100%; text-align: center; color: #d84315; font-size: 26px; font-weight: bold; pointer-events: none; z-index: 10; }
-        #startScreen { position: absolute; top: 150px; left: 0; width: 100%; height: calc(100vh - 300px); background: rgba(255,255,255,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
-        #goButton { padding: 15px 45px; font-size: 24px; background: #ff5722; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; }
+
+        /* ゲームエリア（150pxずつ上下を空ける） */
+        #game-outer {
+            position: absolute; top: 150px; bottom: 150px; left: 0; right: 0;
+            background: #fff3e0; overflow: hidden;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        #ui { position: absolute; top: 10px; left: 0; width: 100%; text-align: center; color: #d84315; font-size: 26px; font-weight: bold; pointer-events: none; z-index: 10; text-shadow: 1px 1px 0 white; }
+        
+        /* スタート＆ゲームオーバー画面 */
+        #menuScreen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.92); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 50;
+            padding-top: 20px;
+        }
+
+        #ad-middle-container { width: 300px; height: 160px; background: #000; margin: 15px 0; display: none; justify-content: center; align-items: center; overflow: hidden; flex-shrink: 0; }
+
+        .btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+        #goButton { padding: 15px 0; font-size: 22px; background: #ff5722; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; width: 240px; box-shadow: 0 4px #bf360c; }
+        .link-btn { padding: 12px 0; font-size: 14px; background: #9b59b6; border: none; border-radius: 50px; color: white; font-weight: bold; text-decoration: none; width: 240px; text-align: center; box-shadow: 0 4px #8e44ad; }
     </style>
 </head>
 <body>
+
     <div id="ad-top"><iframe src="ad.html"></iframe></div>
-    <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
-    <div id="startScreen">
-        <h1 style="color:#ff5722; font-style: italic;">ノびる首</h1>
-        <p>左右スライドで首を伸ばせ！<br>栄養（🍙）を食べて成長だ！✂️は回避！</p>
-        <button id="goButton">伸ばす！</button>
+
+    <div id="game-outer">
+        <div id="ui">LENGTH: 0</div>
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="menuScreen">
+            <h1 id="menuTitle" style="color:#ff5722; font-style: italic; margin: 0;">ノびる首</h1>
+            <p id="menuDesc" style="text-align: center; margin: 10px 0;">左右スライドで首を伸ばせ！<br>栄養（🍙）を食べて成長だ！✂️は回避！</p>
+            
+            <div id="ad-middle-container">
+                <script src="https://adm.shinobi.jp/s/1e6de436ea850948e238e975a93767eb"></script>
+            </div>
+
+            <div class="btn-group">
+                <button id="goButton">伸ばす！</button>
+                <a href="https://saaaachi.github.io/Bunny-Jump-Up/" class="link-btn">他のゲームはこちら</a>
+            </div>
+        </div>
     </div>
-    <div id="ui">LENGTH: 0</div>
-    <canvas id="gameCanvas"></canvas>
+
+    <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const ui = document.getElementById("ui");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 300;
+        const menuScreen = document.getElementById("menuScreen");
+        const menuTitle = document.getElementById("menuTitle");
+        const menuDesc = document.getElementById("menuDesc");
+        const adMid = document.getElementById("ad-middle-container");
+        const goButton = document.getElementById("goButton");
+        const gameOuter = document.getElementById("game-outer");
 
-        let score = 0, gameActive = false, items = [];
-        let player = { x: canvas.width/2, targetX: canvas.width/2 };
+        function resize() {
+            canvas.width = gameOuter.clientWidth;
+            canvas.height = gameOuter.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-        document.getElementById("goButton").onclick = () => {
-            document.getElementById("startScreen").style.display = "none";
-            gameActive = true; score = 0; items = []; spawnItem(); update();
+        let score = 0, gameActive = false, items = [], spawnTimer = null;
+        let player = { x: 0, targetX: 0 };
+
+        goButton.onclick = () => {
+            menuScreen.style.display = "none";
+            gameActive = true;
+            score = 0;
+            items = [];
+            ui.innerText = "LENGTH: 0";
+            player.x = canvas.width / 2;
+            player.targetX = canvas.width / 2;
+            spawnItem();
+            update();
         };
 
-        window.addEventListener("touchmove", (e) => { 
-            player.targetX = e.touches[0].clientX; e.preventDefault(); 
+        // スライド操作
+        window.addEventListener("touchmove", (e) => {
+            if(!gameActive) return;
+            const rect = canvas.getBoundingClientRect();
+            player.targetX = e.touches[0].clientX - rect.left;
+            e.preventDefault();
         }, {passive: false});
-        window.addEventListener("mousemove", (e) => player.targetX = e.clientX);
+
+        window.addEventListener("mousemove", (e) => {
+            if(!gameActive) return;
+            const rect = canvas.getBoundingClientRect();
+            player.targetX = e.clientX - rect.left;
+        });
 
         function spawnItem() {
             if(!gameActive) return;
             const isHazard = Math.random() < 0.3;
             items.push({
-                x: Math.random() * (canvas.width - 40) + 20,
+                x: Math.random() * (canvas.width - 60) + 30,
                 y: -50,
                 emoji: isHazard ? "✂️" : "🍙",
                 type: isHazard ? "bad" : "good",
-                speed: 3 + (score / 10)
+                speed: 3 + Math.min(score / 5, 8) // 徐々に速くなるが限界を設定
             });
-            setTimeout(spawnItem, Math.max(300, 700 - (score * 5)));
+            
+            // タイマー管理
+            if(spawnTimer) clearTimeout(spawnTimer);
+            spawnTimer = setTimeout(spawnItem, Math.max(400, 800 - (score * 10)));
         }
 
         function update() {
             if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            player.x += (player.targetX - player.x) * 0.1;
+            // プレイヤーの動き
+            player.x += (player.targetX - player.x) * 0.15;
 
-            // 首の描画（シュールポイント：胴体から顔まで線を引く）
+            // 首の描画
             ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, canvas.height); // 画面中央下部（胴体）
-            ctx.quadraticCurveTo(player.x, canvas.height - 50, player.x, canvas.height - 100);
+            ctx.moveTo(canvas.width / 2, canvas.height);
+            ctx.quadraticCurveTo(player.x, canvas.height - 50, player.x, canvas.height - 110);
             ctx.strokeStyle = "#ffab91";
-            ctx.lineWidth = 20 + Math.min(score, 30); // 食べると首が太くなる
+            ctx.lineWidth = 25 + Math.min(score * 1.5, 50); 
             ctx.lineCap = "round";
             ctx.stroke();
 
             // 顔
-            ctx.font = "60px Arial"; ctx.textAlign = "center";
-            ctx.fillText("🌝", player.x, canvas.height - 110);
+            ctx.font = "70px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🌝", player.x, canvas.height - 120);
 
+            // アイテムの更新
             for(let i = items.length - 1; i >= 0; i--) {
                 let it = items[i];
                 it.y += it.speed;
-                ctx.font = "40px Arial";
+                ctx.font = "45px Arial";
                 ctx.fillText(it.emoji, it.x, it.y);
 
-                let d = Math.sqrt((player.x - it.x)**2 + (canvas.height - 110 - it.y)**2);
-                if(d < 45) {
+                // 当たり判定
+                let dx = player.x - it.x;
+                let dy = (canvas.height - 120) - it.y;
+                let d = Math.sqrt(dx*dx + dy*dy);
+
+                if(d < 50) {
                     if(it.type === "good") {
-                        score++; ui.innerText = "LENGTH: " + score; items.splice(i, 1);
+                        score++;
+                        ui.innerText = "LENGTH: " + score;
+                        items.splice(i, 1);
                     } else {
-                        alert("首が切れた！ LENGTH: " + score); location.reload(); return;
+                        gameOver();
+                        return;
                     }
-                } else if(it.y > canvas.height + 50) items.splice(i, 1);
+                } else if(it.y > canvas.height + 50) {
+                    items.splice(i, 1);
+                }
             }
             requestAnimationFrame(update);
         }
 
+        function gameOver() {
+            gameActive = false;
+            clearTimeout(spawnTimer);
+            
+            menuTitle.innerText = "首が切れた！";
+            menuTitle.style.color = "#d32f2f";
+            menuDesc.innerText = "最終スコア: " + score;
+            goButton.innerText = "もう一度伸ばす！";
+            
+            adMid.style.display = "flex"; // 広告を表示
+            menuScreen.style.display = "flex";
+        }
+
+        // 30秒ごとに広告更新
         setInterval(() => {
             const frames = [document.querySelector('#ad-top iframe'), document.querySelector('#ad-bottom iframe')];
-            frames.forEach(f => { if(f) { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }});
-        }, 30000);
+            frames.forEach(f => { 
+                if(f) { 
+                    const s = f.src; f.src = "about:blank"; 
+                    setTimeout(() => f.src = s, 100); 
+                }
+            });
+        }, 29000);
     </script>
 </body>
 </html>
