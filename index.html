@@ -3,151 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Long Neck Run - 第24弾</title>
+    <title>Long Neck Run - ノびる首</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1299640300068792" crossorigin="anonymous"></script>
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; overflow: hidden; background: #ffccbc; font-family: sans-serif; touch-action: none; position: fixed; width: 100%; height: 100%; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; position: fixed; touch-action: none; }
+        body { background: #ffccbc; font-family: 'Hiragino Sans', 'Meiryo', sans-serif; display: flex; flex-direction: column; color: #333; }
         
-        #ad-top, #ad-bottom { position: fixed; left: 0; width: 100%; height: 150px; background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; }
-        #ad-top { top: 0; } 
-        #ad-bottom { bottom: 0; }
-        iframe { border: none; width: 100%; height: 150px; }
+        /* 上部広告：100px 固定 */
+        #ad-top { width: 100%; height: 100px; background: #333; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 100; border-bottom: 2px solid #ff5722; }
 
-        #game-outer {
-            position: absolute; top: 150px; bottom: 150px; left: 0; right: 0;
-            background: #fff3e0; overflow: hidden;
-        }
+        /* ゲームエリア */
+        #game-outer { flex-grow: 1; position: relative; width: 100%; background: #fff3e0; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
-
-        #ui { position: absolute; top: 10px; left: 0; width: 100%; text-align: center; color: #d84315; font-size: 26px; font-weight: bold; pointer-events: none; z-index: 10; text-shadow: 1px 1px 0 white; }
         
-        /* メニュー画面の修正：paddingを減らし、中身を上に詰める */
+        #ui { position: absolute; top: 15px; width: 100%; text-align: center; color: #d84315; font-size: 28px; font-weight: bold; pointer-events: none; z-index: 10; text-shadow: 2px 2px 0 white; }
+
+        /* メニュー画面 */
         #menuScreen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(255,255,255,0.92); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 50;
-            padding-top: 5px; /* 上の余白を最小限に */
+            background: rgba(255,255,255,0.96); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 500; padding: 20px;
         }
 
-        /* 広告コンテナのサイズを少しコンパクトに調整 */
-        #ad-middle-container { width: 300px; height: 140px; background: #000; margin: 8px 0; display: none; justify-content: center; align-items: center; overflow: hidden; flex-shrink: 0; }
+        /* 収益の柱：レクタングル広告 */
+        #ad-middle-box {
+            width: 300px; height: 250px; background: #eee;
+            margin: 15px 0; display: none; justify-content: center; align-items: center;
+            border: 1px solid #ccc; border-radius: 10px; overflow: hidden;
+        }
+        
+        .btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+        .menu-btn { width: 280px; padding: 18px; font-size: 20px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; transition: 0.2s; }
+        #goButton { background: #ff5722; color: white; box-shadow: 0 5px #bf360c; }
+        #goButton:disabled { background: #bbb; box-shadow: none; color: #777; }
+        .sub-btn { background: #9b59b6; color: white; box-shadow: 0 5px #8e44ad; font-size: 16px; }
 
-        .btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 8px; } /* 間隔を8pxに短縮 */
-        #goButton { padding: 12px 0; font-size: 20px; background: #ff5722; border: none; border-radius: 50px; color: white; font-weight: bold; cursor: pointer; width: 220px; box-shadow: 0 4px #bf360c; }
-        .link-btn { padding: 10px 0; font-size: 14px; background: #9b59b6; border: none; border-radius: 50px; color: white; font-weight: bold; text-decoration: none; width: 220px; text-align: center; box-shadow: 0 4px #8e44ad; }
+        /* インタースティシャル */
+        #inter-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 99999; align-items: center; justify-content: center; }
+        .inter-content { width: 330px; height: 350px; background: #fff; position: relative; border-radius: 15px; }
+        #close-ad-btn { position: absolute; top: -55px; right: 0; width: 45px; height: 45px; background: #333; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 2px solid #fff; cursor: pointer; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <div id="ad-top"><iframe src="ad.html"></iframe></div>
+    <div id="ad-top">
+        <ins class="adsbygoogle" style="display:inline-block;width:320px;height:100px" data-ad-client="ca-pub-1299640300068792" data-ad-slot="3972022911"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
     <div id="game-outer">
         <div id="ui">LENGTH: 0</div>
-        <canvas id="gameCanvas"></canvas>
-
+        
         <div id="menuScreen">
-            <h1 id="menuTitle" style="color:#ff5722; font-style: italic; margin: 5px 0; font-size: 24px;">ノびる首</h1>
-            <p id="menuDesc" style="text-align: center; margin: 5px 0; font-size: 13px;">左右スライドで首を伸ばせ！<br>🍙で成長、✂️は回避！</p>
-            
-            <div id="ad-middle-container">
-                <script src="https://adm.shinobi.jp/s/1e6de436ea850948e238e975a93767eb"></script>
+            <div style="text-align:center;">
+                <h1 id="menuTitle" style="color:#ff5722; margin:0; font-size: 32px; font-style: italic;">ノびる首</h1>
+                <p id="menuMsg" style="margin:5px 0; color: #d84315;">🍙を食べて首を伸ばせ！✂️は回避！</p>
+                <div style="color: #ff5722; font-size: 20px; font-weight: bold; margin: 5px 0;">MAX LENGTH: <span id="best-ui">0</span></div>
+            </div>
+
+            <div id="ad-middle-box">
+                <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-1299640300068792" data-ad-slot="9050127185"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
 
             <div class="btn-group">
-                <button id="goButton">伸ばす！</button>
-                <a href="https://saaaachi.github.io/Bunny-Jump-Up/" class="link-btn">他のゲームはこちら</a>
+                <button id="goButton" class="menu-btn" onclick="startGame()">伸ばし始める！</button>
+                <a href="https://saaaachi.github.io/" class="sub-btn menu-btn">他のゲームで遊ぶ</a>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="inter-screen">
+            <div class="inter-content">
+                <div id="close-ad-btn" onclick="closeInterAd()">5</div>
+                <iframe id="ifr-inter" src="about:blank" style="width:100%; height:100%; border:none; border-radius:15px; background:#fff;"></iframe>
             </div>
         </div>
     </div>
 
-    <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
-
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const ui = document.getElementById("ui");
-        const menuScreen = document.getElementById("menuScreen");
-        const menuTitle = document.getElementById("menuTitle");
-        const menuDesc = document.getElementById("menuDesc");
-        const adMid = document.getElementById("ad-middle-container");
-        const goButton = document.getElementById("goButton");
-        const gameOuter = document.getElementById("game-outer");
+        const canvas = document.getElementById("gameCanvas"), ctx = canvas.getContext("2d"),
+              ui = document.getElementById("ui"), menuScreen = document.getElementById("menuScreen"),
+              menuTitle = document.getElementById("menuTitle"), menuMsg = document.getElementById("menuMsg"),
+              bestUi = document.getElementById("best-ui"), goButton = document.getElementById("goButton"),
+              adMid = document.getElementById("ad-middle-box");
 
-        function resize() {
-            canvas.width = gameOuter.clientWidth;
-            canvas.height = gameOuter.clientHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        let score = 0, gameActive = false, items = [], spawnTimer = null;
+        let score = 0, bestScore = localStorage.getItem("long_neck_best") || 0, playCount = 0;
+        let gameActive = false, items = [], spawnTimer = null;
         let player = { x: 0, targetX: 0 };
 
-        goButton.onclick = () => {
+        function resize() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            player.x = canvas.width / 2;
+            player.targetX = canvas.width / 2;
+        }
+        window.onload = () => { resize(); bestUi.innerText = bestScore; adMid.style.display = "none"; };
+        window.onresize = resize;
+
+        function startGame() {
             menuScreen.style.display = "none";
+            adMid.style.display = "none";
             gameActive = true;
             score = 0;
             items = [];
             ui.innerText = "LENGTH: 0";
-            player.x = canvas.width / 2;
-            player.targetX = canvas.width / 2;
+            resize();
             spawnItem();
             update();
-        };
+        }
 
-        window.addEventListener("touchmove", (e) => {
+        function handleMove(e) {
             if(!gameActive) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const rect = canvas.getBoundingClientRect();
-            player.targetX = e.touches[0].clientX - rect.left;
-            e.preventDefault();
-        }, {passive: false});
+            player.targetX = clientX - rect.left;
+        }
 
-        window.addEventListener("mousemove", (e) => {
-            if(!gameActive) return;
-            const rect = canvas.getBoundingClientRect();
-            player.targetX = e.clientX - rect.left;
-        });
+        canvas.addEventListener("touchstart", (e) => handleMove(e), {passive: false});
+        canvas.addEventListener("touchmove", (e) => { handleMove(e); e.preventDefault(); }, {passive: false});
+        canvas.addEventListener("mousemove", handleMove);
 
         function spawnItem() {
             if(!gameActive) return;
-            const isHazard = Math.random() < 0.3;
+            const isHazard = Math.random() < 0.28;
             items.push({
                 x: Math.random() * (canvas.width - 60) + 30,
                 y: -50,
                 emoji: isHazard ? "✂️" : "🍙",
                 type: isHazard ? "bad" : "good",
-                speed: 3 + Math.min(score / 5, 8)
+                speed: 3.5 + Math.min(score / 8, 7)
             });
-            if(spawnTimer) clearTimeout(spawnTimer);
-            spawnTimer = setTimeout(spawnItem, Math.max(400, 800 - (score * 10)));
+            spawnTimer = setTimeout(spawnItem, Math.max(350, 850 - (score * 12)));
         }
 
         function update() {
             if(!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            player.x += (player.targetX - player.x) * 0.15;
 
+            // プレイヤー移動（慣性）
+            player.x += (player.targetX - player.x) * 0.2;
+
+            // 首の描画（クアッド曲線でゆらゆらさせる）
             ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, canvas.height);
-            ctx.quadraticCurveTo(player.x, canvas.height - 50, player.x, canvas.height - 110);
+            ctx.moveTo(canvas.width / 2, canvas.height); // 画面下中央から
+            // 首の太さはスコアに応じて少し太くなる
+            const neckWidth = 25 + Math.min(score * 1.2, 45);
+            ctx.lineWidth = neckWidth;
             ctx.strokeStyle = "#ffab91";
-            ctx.lineWidth = 25 + Math.min(score * 1.5, 50); 
             ctx.lineCap = "round";
+            
+            // 曲線で首を表現
+            ctx.quadraticCurveTo(player.x, canvas.height - 40, player.x, canvas.height - 120);
             ctx.stroke();
 
-            ctx.font = "70px Arial";
+            // 顔の描画
+            ctx.font = "75px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("🌝", player.x, canvas.height - 120);
+            ctx.fillText("🌝", player.x, canvas.height - 135);
 
+            // アイテムの更新と描画
             for(let i = items.length - 1; i >= 0; i--) {
                 let it = items[i];
                 it.y += it.speed;
-                ctx.font = "45px Arial";
+                
+                ctx.font = "48px Arial";
                 ctx.fillText(it.emoji, it.x, it.y);
+
+                // 当たり判定
                 let dx = player.x - it.x;
-                let dy = (canvas.height - 120) - it.y;
-                let d = Math.sqrt(dx*dx + dy*dy);
-                if(d < 50) {
+                let dy = (canvas.height - 135) - it.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+
+                if(dist < 55) {
                     if(it.type === "good") {
                         score++;
                         ui.innerText = "LENGTH: " + score;
@@ -156,7 +187,7 @@
                         gameOver();
                         return;
                     }
-                } else if(it.y > canvas.height + 50) {
+                } else if(it.y > canvas.height + 60) {
                     items.splice(i, 1);
                 }
             }
@@ -166,18 +197,55 @@
         function gameOver() {
             gameActive = false;
             clearTimeout(spawnTimer);
+            playCount++;
+
+            if(score > bestScore) {
+                bestScore = score;
+                localStorage.setItem("long_neck_best", bestScore);
+                bestUi.innerText = bestScore;
+            }
+
             menuTitle.innerText = "首が切れた！";
             menuTitle.style.color = "#d32f2f";
-            menuDesc.innerText = "スコア: " + score;
-            goButton.innerText = "もう一度伸ばす！";
+            menuMsg.innerText = "今回の記録: " + score;
+            goButton.innerText = "お待ちください...";
+            goButton.disabled = true;
+
             adMid.style.display = "flex"; 
             menuScreen.style.display = "flex";
+
+            setTimeout(() => {
+                goButton.disabled = false;
+                goButton.innerText = "もう一度伸ばす！";
+            }, 1500);
+
+            if(playCount % 3 === 0) setTimeout(showInterAd, 600);
         }
 
-        setInterval(() => {
-            const frames = [document.querySelector('#ad-top iframe'), document.querySelector('#ad-bottom iframe')];
-            frames.forEach(f => { if(f) { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }});
-        }, 30000);
+        function showInterAd() {
+            const screen = document.getElementById("inter-screen"), 
+                  closeBtn = document.getElementById("close-ad-btn"), 
+                  ifr = document.getElementById('ifr-inter');
+            ifr.src = './ad.large.html?v=' + Date.now();
+            screen.style.display = "flex";
+            let count = 5;
+            closeBtn.innerText = count;
+            closeBtn.style.pointerEvents = "none";
+            const itv = setInterval(() => {
+                count--;
+                if(count > 0) closeBtn.innerText = count;
+                else {
+                    clearInterval(itv);
+                    closeBtn.innerText = "×";
+                    closeBtn.style.pointerEvents = "auto";
+                }
+            }, 1000);
+        }
+
+        function closeInterAd() {
+            document.getElementById("inter-screen").style.display = "none";
+            document.getElementById('ifr-inter').src = 'about:blank';
+        }
     </script>
 </body>
 </html>
